@@ -20,10 +20,10 @@ enc = tiktoken.get_encoding("gpt2")
 
 if __name__ == '__main__':
     # takes 54GB in huggingface .cache dir, about 8M documents (8,013,769)
-    dataset = load_dataset("openwebtext", num_proc=num_proc_load_dataset)
+    dataset = load_dataset("openwebtext", num_proc=num_proc_load_dataset, cache_dir='cache/')
 
     # owt by default only contains the 'train' split, so create a test split
-    split_dataset = dataset["train"].train_test_split(test_size=0.0005, seed=2357, shuffle=True)
+    split_dataset = dataset["train"].train_test_split(test_size=0.0005, seed=2357, shuffle=True, train_indices_cache_file_name="cache/train_split.bin", test_indices_cache_file_name='cache/test_split.bin')
     split_dataset['val'] = split_dataset.pop('test') # rename the test split to val
 
     # this results in:
@@ -53,6 +53,8 @@ if __name__ == '__main__':
         remove_columns=['text'],
         desc="tokenizing the splits",
         num_proc=num_proc,
+        load_from_cache_file=True,
+        # cache_file_names='cache'
     )
 
     # concatenate all the ids in each dataset into one large file we can use for training
